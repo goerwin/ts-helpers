@@ -8,6 +8,7 @@
   "author": "Erwin Gaitan O <erwingaitano@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "bluebird": "^3.5.0"
+    "bluebird": "^3.5.0",
+    "fs-extra": "^3.0.1"
   }
 }

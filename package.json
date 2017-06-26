@@ -4,12 +4,16 @@
   "version": "1.1.0",
   "description": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "nyc --reporter=html --reporter=text mocha _tests"
   },
   "author": "Erwin Gaitan O <erwingaitano@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.5.0",
     "fs-extra": "^3.0.1"
+  },
+  "devDependencies": {
+    "mocha": "^3.4.2",
+    "nyc": "^11.0.3"
   }
 }

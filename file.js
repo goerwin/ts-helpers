@@ -37,7 +37,23 @@ function getChildFiles(folderPath, options = {}) {
     }, childFiles);
 }
 
+function getFileExtension(filePath) {
+  const extParts = filePath.split('/').pop().split('.');
+  const lastItem = extParts.pop();
+  if (extParts.length === 0) return '';
+  return lastItem;
+}
+
+function getFileBasename(filePath) {
+  const basenameParts = filePath.split('/').pop().split('.');
+  const lastItem = basenameParts.pop();
+  if (basenameParts.length === 0) return lastItem;
+  return basenameParts.join('.');
+}
+
 module.exports = {
   getChildFolders,
-  getChildFiles
+  getChildFiles,
+  getFileExtension,
+  getFileBasename
 };

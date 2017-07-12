@@ -4,7 +4,10 @@
   "version": "2.0.0",
   "description": "",
   "scripts": {
-    "test": "nyc --reporter=html --reporter=text mocha _tests"
+    "test": "mocha",
+    "test-coverage": "nyc --all --reporter=html --reporter=text mocha",
+    "test2": "nyc --reporter=html --reporter=text mocha -r ts-node/register _tests/index.ts",
+    "test3": "nyc --reporter=html --reporter=text mocha _tests"
   },
   "author": "Erwin Gaitan O <erwingaitano@gmail.com>",
   "license": "ISC",
@@ -13,7 +16,19 @@
     "fs-extra": "^3.0.1"
   },
   "devDependencies": {
+    "@types/bluebird": "^3.5.8",
+    "@types/fs-extra": "^3.0.3",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^8.0.10",
     "mocha": "^3.4.2",
-    "nyc": "^11.0.3"
+    "nyc": "^11.0.3",
+    "ts-node": "^3.2.0",
+    "typescript": "^2.4.1"
+  },
+  "nyc": {
+    "include": ["file.ts", "url.ts"],
+    "extension": [".ts", ".tsx"],
+    "exclude": ["_tests/**/*.ts"],
+    "require": ["ts-node/register"]
   }
 }

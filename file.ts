@@ -1,11 +1,13 @@
-const path = require('path');
-const fs = require('fs-extra');
+import * as fs from 'fs-extra';
+import * as path from 'path';
+import './types';
 
-function getChildDirs(dirPath, options = {}) {
+export function getChildDirs(dirPath: string, options: Types.FileDirOptions = {}) {
   options.ignoreDirs = (options.ignoreDirs && options.ignoreDirs.map(path.normalize)) || [];
+  const ignoreDirs = options.ignoreDirs;
 
-  const getRecursive = (relPath = '') => {
-    let childDirs;
+  const getRecursive = (relPath = ''): Types.Directory[] => {
+    let childDirs: Types.Directory[];
 
     try {
       childDirs = fs.readdirSync(path.join(dirPath, relPath))
@@ -16,7 +18,7 @@ function getChildDirs(dirPath, options = {}) {
           return {
             name: el,
             path: relativePath,
-            isIgnored: options.ignoreDirs.includes(relativePath),
+            isIgnored: ignoreDirs.includes(relativePath),
             isEmpty: fs.readdirSync(path.join(dirPath, relPath, el)).length === 0
           };
         });
@@ -24,23 +26,24 @@ function getChildDirs(dirPath, options = {}) {
       childDirs = [];
     }
 
-    if (!options.recursive) return childDirs;
+    if (!options.recursive) { return childDirs; }
 
     return childDirs.reduce((result, el) => {
       if (el.isIgnored) { return result; }
 
-      return result.concat(getRecursive(el.path, options));
+      return result.concat(getRecursive(el.path));
     }, childDirs);
   };
 
   return getRecursive();
 }
 
-function getChildFiles(dirPath, options = {}) {
+export function getChildFiles(dirPath: string, options: Types.FileDirOptions = {}) {
   options.ignoreFiles = (options.ignoreFiles && options.ignoreFiles.map(path.normalize)) || [];
+  const ignoreFiles = options.ignoreFiles;
 
-  const getRecursive = (relPath = '') => {
-    let childFiles;
+  const getRecursive = (relPath = ''): Types.File[] => {
+    let childFiles: Types.File[];
 
     try {
       const dirContent = fs.readdirSync(path.join(dirPath, relPath));
@@ -55,29 +58,23 @@ function getChildFiles(dirPath, options = {}) {
             base,
             ext,
             path: relativePath,
-            isIgnored: options.ignoreFiles.includes(relativePath)
+            isIgnored: ignoreFiles.includes(relativePath)
           };
         });
     } catch (err) {
       childFiles = [];
     }
 
-    if (!options.recursive) return childFiles;
+    if (!options.recursive) { return childFiles; }
 
-    return getChildDirs(dirPath, Object.assign(options, { recursive: true }))
+    return getChildDirs(dirPath, { ...options, recursive: true })
       .reduce((result, el) => {
         if (el.isIgnored) { return result; }
 
-        return result.concat(
-          getRecursive(el.path, Object.assign(options, { recursive: false }))
-        );
+        options.recursive = false;
+        return result.concat(getRecursive(el.path));
       }, childFiles);
   };
 
   return getRecursive();
 }
-
-module.exports = {
-  getChildDirs,
-  getChildFiles
-};

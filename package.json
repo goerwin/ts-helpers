@@ -1,13 +1,12 @@
 {
   "name": "node-helpers",
-  "main": "index.js",
-  "version": "2.0.0",
+  "main": "dist/index.js",
+  "version": "2.1.0",
   "description": "",
   "scripts": {
-    "test": "mocha",
-    "test-coverage": "nyc --all --reporter=html --reporter=text mocha",
-    "test2": "nyc --reporter=html --reporter=text mocha -r ts-node/register _tests/index.ts",
-    "test3": "nyc --reporter=html --reporter=text mocha _tests"
+    "test": "mocha -r source-map-support/register --compilers ts-node/register src/**/_tests/*.ts",
+    "test-coverage": "nyc --all --reporter=html --reporter=text npm run test",
+    "build": "npm run test && rm -rf dist && tsc"
   },
   "author": "Erwin Gaitan O <erwingaitano@gmail.com>",
   "license": "ISC",
@@ -26,9 +25,9 @@
     "typescript": "^2.4.1"
   },
   "nyc": {
-    "include": ["file.ts", "url.ts"],
+    "include": ["src/**/*.ts"],
+    "exclude": ["dist", "src/**/_tests/*.ts", "src/index.ts"],
     "extension": [".ts", ".tsx"],
-    "exclude": ["_tests/**/*.ts"],
     "require": ["ts-node/register"]
   }
 }

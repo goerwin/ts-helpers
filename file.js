@@ -1,59 +1,83 @@
-const fs = require('fs-extra');
 const path = require('path');
+const fs = require('fs-extra');
 
-function getChildFolders(folderPath, options = {}) {
-  let childFolders;
+function getChildDirs(dirPath, options = {}) {
+  options.ignoreDirs = (options.ignoreDirs && options.ignoreDirs.map(path.normalize)) || [];
 
-  try {
-    childFolders = fs.readdirSync(folderPath)
-      .filter(el => fs.statSync(path.join(folderPath, el)).isDirectory())
-      .map(el => path.join(folderPath, el));
-  } catch (err) {
-    childFolders = [];
-  }
+  const getRecursive = (relPath = '') => {
+    let childDirs;
 
-  if (!options.recursive) return childFolders;
-  return childFolders
-          .reduce((result, el) => result.concat(getChildFolders(el, options)), childFolders);
+    try {
+      childDirs = fs.readdirSync(path.join(dirPath, relPath))
+        .filter(el => fs.statSync(path.join(dirPath, relPath, el)).isDirectory())
+        .map(el => {
+          const relativePath = path.normalize(path.join(relPath, el));
+
+          return {
+            name: el,
+            path: relativePath,
+            isIgnored: options.ignoreDirs.includes(relativePath),
+            isEmpty: fs.readdirSync(path.join(dirPath, relPath, el)).length === 0
+          };
+        });
+    } catch (err) {
+      childDirs = [];
+    }
+
+    if (!options.recursive) return childDirs;
+
+    return childDirs.reduce((result, el) => {
+      if (el.isIgnored) { return result; }
+
+      return result.concat(getRecursive(el.path, options));
+    }, childDirs);
+  };
+
+  return getRecursive();
 }
 
-function getChildFiles(folderPath, options = {}) {
-  let childFiles;
+function getChildFiles(dirPath, options = {}) {
+  options.ignoreFiles = (options.ignoreFiles && options.ignoreFiles.map(path.normalize)) || [];
 
-  try {
-    const folderContent = fs.readdirSync(folderPath);
-    childFiles = folderContent
-      .filter(el => fs.statSync(path.join(folderPath, el)).isFile())
-      .map(el => path.join(folderPath, el));
-  } catch (err) {
-    childFiles = [];
-  }
+  const getRecursive = (relPath = '') => {
+    let childFiles;
 
-  if (!options.recursive) return childFiles;
+    try {
+      const dirContent = fs.readdirSync(path.join(dirPath, relPath));
+      childFiles = dirContent
+        .filter(el => fs.statSync(path.join(dirPath, relPath, el)).isFile())
+        .map(el => {
+          const { name, base, ext } = path.parse(path.join(dirPath, el));
+          const relativePath = path.normalize(path.join(relPath, el));
 
-  return getChildFolders(folderPath, { recursive: true })
-    .reduce((result, el) => {
-      return result.concat(getChildFiles(el, { recursive: false }));
-    }, childFiles);
-}
+          return {
+            name,
+            base,
+            ext,
+            path: relativePath,
+            isIgnored: options.ignoreFiles.includes(relativePath)
+          };
+        });
+    } catch (err) {
+      childFiles = [];
+    }
 
-function getFileExtension(filePath) {
-  const extParts = filePath.split('/').pop().split('.');
-  const lastItem = extParts.pop();
-  if (extParts.length === 0) return '';
-  return lastItem;
-}
+    if (!options.recursive) return childFiles;
 
-function getFileBasename(filePath) {
-  const basenameParts = filePath.split('/').pop().split('.');
-  const lastItem = basenameParts.pop();
-  if (basenameParts.length === 0) return lastItem;
-  return basenameParts.join('.');
+    return getChildDirs(dirPath, Object.assign(options, { recursive: true }))
+      .reduce((result, el) => {
+        if (el.isIgnored) { return result; }
+
+        return result.concat(
+          getRecursive(el.path, Object.assign(options, { recursive: false }))
+        );
+      }, childFiles);
+  };
+
+  return getRecursive();
 }
 
 module.exports = {
-  getChildFolders,
-  getChildFiles,
-  getFileExtension,
-  getFileBasename
+  getChildDirs,
+  getChildFiles
 };

@@ -1,6 +1,7 @@
 {
   "name": "node-helpers",
   "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "version": "2.1.0",
   "description": "",
   "scripts": {

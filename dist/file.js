@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs-extra");
 const path = require("path");
-require("./types");
 function getChildDirs(dirPath, options = {}) {
     options.ignoreDirs = (options.ignoreDirs && options.ignoreDirs.map(path.normalize)) || [];
     const ignoreDirs = options.ignoreDirs;

@@ -273,6 +273,14 @@ describe('file helpers', () => {
       ];
 
       assert.deepStrictEqual(actual, expected);
+
+      // containing trailing / in ignoreDirs
+      const actual2 = fileHelpers.getChildFiles(
+        path.join(__dirname, 'examples/erwin'),
+        { recursive: true, ignoreDirs: ['gaitan/'], ignoreFiles: ['2.css', 'gogo/math.js'] }
+      );
+
+      assert.deepStrictEqual(actual2, expected);
     });
   });
 });

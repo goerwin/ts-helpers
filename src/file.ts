@@ -24,7 +24,10 @@ export interface File {
 
 export function getChildDirs(dirPath: string, options: FileDirOptions = {}) {
   options.ignoreDirs = (options.ignoreDirs && options.ignoreDirs.map(path.normalize)) || [];
-  const ignoreDirs = options.ignoreDirs;
+
+  // Remove trailing /
+  const ignoreDirs = options.ignoreDirs
+    .map(el => el[el.length - 1] === '/' ? el.substring(0, el.length - 1) : el);
 
   const getRecursive = (relPath = ''): Directory[] => {
     let childDirs: Directory[];

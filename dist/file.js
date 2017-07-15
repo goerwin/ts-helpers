@@ -2,6 +2,24 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs-extra");
 const path = require("path");
+function isFile(dirPath, relPath, name) {
+    try {
+        // Broken symlinks can make this throw so that's why the try/catch
+        return fs.statSync(path.join(dirPath, relPath, name)).isFile();
+    }
+    catch (err) {
+        return false;
+    }
+}
+function isDirectory(dirPath, relPath, name) {
+    try {
+        // Broken symlinks can make this throw so that's why the try/catch
+        return fs.statSync(path.join(dirPath, relPath, name)).isDirectory();
+    }
+    catch (err) {
+        return false;
+    }
+}
 function getChildDirs(dirPath, options = {}) {
     options.ignoreDirs = (options.ignoreDirs && options.ignoreDirs.map(path.normalize)) || [];
     // Remove trailing /
@@ -11,7 +29,7 @@ function getChildDirs(dirPath, options = {}) {
         let childDirs;
         try {
             childDirs = fs.readdirSync(path.join(dirPath, relPath))
-                .filter(el => fs.statSync(path.join(dirPath, relPath, el)).isDirectory())
+                .filter(el => isDirectory(dirPath, relPath, el))
                 .map(el => {
                 const relativePath = path.normalize(path.join(relPath, el));
                 return {
@@ -46,7 +64,7 @@ function getChildFiles(dirPath, options = {}) {
         try {
             const dirContent = fs.readdirSync(path.join(dirPath, relPath));
             childFiles = dirContent
-                .filter(el => fs.statSync(path.join(dirPath, relPath, el)).isFile())
+                .filter(el => isFile(dirPath, relPath, el))
                 .map(el => {
                 const { name, base, ext } = path.parse(path.join(dirPath, el));
                 const relativePath = path.normalize(path.join(relPath, el));

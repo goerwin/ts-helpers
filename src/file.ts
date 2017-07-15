@@ -1,40 +1,38 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as types from './types';
 
-export interface FileDirOptions {
-  ignoreDirs?: string[];
-  ignoreFiles?: string[];
-  recursive?: boolean;
+function isFile(dirPath: string, relPath: string, name: string) {
+  try {
+    // Broken symlinks can make this throw so that's why the try/catch
+    return fs.statSync(path.join(dirPath, relPath, name)).isFile();
+  } catch (err) {
+    return false;
+  }
 }
 
-export interface Directory {
-  name: string;
-  path: string;
-  isIgnored: boolean;
-  isEmpty: boolean;
+function isDirectory(dirPath: string, relPath: string, name: string) {
+  try {
+    // Broken symlinks can make this throw so that's why the try/catch
+    return fs.statSync(path.join(dirPath, relPath, name)).isDirectory();
+  } catch (err) {
+    return false;
+  }
 }
 
-export interface File {
-  name: string;
-  base: string;
-  ext: string;
-  path: string;
-  isIgnored: boolean;
-}
-
-export function getChildDirs(dirPath: string, options: FileDirOptions = {}) {
+export function getChildDirs(dirPath: string, options: types.FileDirOptions = {}) {
   options.ignoreDirs = (options.ignoreDirs && options.ignoreDirs.map(path.normalize)) || [];
 
   // Remove trailing /
   const ignoreDirs = options.ignoreDirs
     .map(el => el[el.length - 1] === '/' ? el.substring(0, el.length - 1) : el);
 
-  const getRecursive = (relPath = ''): Directory[] => {
-    let childDirs: Directory[];
+  const getRecursive = (relPath = ''): types.Directory[] => {
+    let childDirs: types.Directory[];
 
     try {
       childDirs = fs.readdirSync(path.join(dirPath, relPath))
-        .filter(el => fs.statSync(path.join(dirPath, relPath, el)).isDirectory())
+        .filter(el => isDirectory(dirPath, relPath, el))
         .map(el => {
           const relativePath = path.normalize(path.join(relPath, el));
 
@@ -61,17 +59,17 @@ export function getChildDirs(dirPath: string, options: FileDirOptions = {}) {
   return getRecursive();
 }
 
-export function getChildFiles(dirPath: string, options: FileDirOptions = {}) {
+export function getChildFiles(dirPath: string, options: types.FileDirOptions = {}) {
   options.ignoreFiles = (options.ignoreFiles && options.ignoreFiles.map(path.normalize)) || [];
   const ignoreFiles = options.ignoreFiles;
 
-  const getRecursive = (relPath = ''): File[] => {
-    let childFiles: File[];
+  const getRecursive = (relPath = ''): types.File[] => {
+    let childFiles: types.File[];
 
     try {
       const dirContent = fs.readdirSync(path.join(dirPath, relPath));
       childFiles = dirContent
-        .filter(el => fs.statSync(path.join(dirPath, relPath, el)).isFile())
+        .filter(el => isFile(dirPath, relPath, el))
         .map(el => {
           const { name, base, ext } = path.parse(path.join(dirPath, el));
           const relativePath = path.normalize(path.join(relPath, el));

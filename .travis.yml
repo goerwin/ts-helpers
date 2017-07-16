@@ -13,6 +13,8 @@ scripts:
   - npm run build
 after_success:
   - npm run semantic-release
+deploy:
+  skip_cleanup: true
 branches:
   except:
     - /^v\d+\.\d+\.\d+$/

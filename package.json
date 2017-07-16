@@ -1,13 +1,17 @@
 {
-  "name": "node-helpers",
+  "name": "ego-node-helpers",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "version": "2.1.0",
+  "version": "0.0.0-development",
   "description": "",
   "scripts": {
-    "build": "npm run test && rm -rf dist && tsc",
+    "build": "npm run clean && npm run test && tsc",
+    "clean": "rm -rf .nyc_output && rm -rf coverage && rm -rf dist",
     "test": "mocha -r source-map-support/register --compilers ts-node/register src/**/_tests/*.ts",
-    "test-coverage": "nyc --all --reporter=html --reporter=text npm run test"
+    "test-coverage": "nyc --reporter=html --reporter=text npm run test",
+    "test-coverage-watch": "chokidar src/**/*.ts -c 'npm run test-coverage'",
+    "test-watch": "chokidar src/**/*.ts -c 'npm run test'",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "author": "Erwin Gaitan O <erwingaitano@gmail.com>",
   "license": "ISC",
@@ -20,18 +24,18 @@
     "@types/fs-extra": "^3.0.3",
     "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.10",
+    "chokidar-cli": "^1.2.0",
     "mocha": "^3.4.2",
     "nyc": "^11.0.3",
     "ts-node": "^3.2.0",
-    "typescript": "^2.4.1"
+    "typescript": "^2.4.1",
+    "semantic-release": "^6.3.6"
   },
   "nyc": {
     "include": [
       "src/**/*.ts"
     ],
     "exclude": [
-      "dist",
-      "src/**/_tests/*.ts",
       "src/index.ts"
     ],
     "extension": [
@@ -41,5 +45,9 @@
     "require": [
       "ts-node/register"
     ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/erwingo/node-helpers.git"
   }
 }

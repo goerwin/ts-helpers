@@ -41,6 +41,10 @@
       "ts-node/register"
     ]
   },
+  "files": [
+    "dist",
+    "readme.md"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/erwingo/node-helpers.git"

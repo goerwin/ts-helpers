@@ -1,11 +1,11 @@
 
 # TODO
-- remove url helper
 - create documentation
-- remove dist folder in github
-- only leave dist folder in npm
 - add coveralls
 
 # DONE
+- only leave dist folder and readme in npm
+- remove dist folder in github
+- remove url helper
 - use semantic-release in node-helpers
 - rename it to: ego-node-helpers in npm

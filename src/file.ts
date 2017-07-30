@@ -99,3 +99,91 @@ export function getChildFiles(dirPath: string, options: types.FileDirOptions = {
 
   return getRecursive();
 }
+
+export function generateJsonTree(rootPath: string, files: string[]) {
+  files = [...files];
+  files.sort();
+
+  const rootPathName = path.basename(rootPath);
+
+  return files
+    .map(file => path.relative(rootPath, file))
+    .reduce((result, file) => {
+      const parentDir = path.dirname(file);
+      const filename = path.basename(file);
+      const parentDirDirs = [rootPathName, ...(parentDir === '.' ? [] : parentDir.split('/'))];
+
+      function childrenGenerator(
+        parentDirs: string[],
+        siblings: types.JsonTreeItem[] = []
+      ): types.JsonTreeItem[] {
+        if (parentDirs.length === 0) {
+          return [...siblings, { name: filename, path: path.join(rootPathName, file) }];
+        }
+
+        const fpath = parentDirDirs.slice(0, parentDirDirs.length - (parentDirs.length - 1))
+          .join('/');
+
+        const item = siblings.find(el => el.path === fpath);
+        const newSiblings = (item && item.children) || [];
+
+        return [
+          ...siblings.filter(el => el.path !== fpath),
+          {
+            name: parentDirs[0],
+            path: fpath,
+            children: childrenGenerator(parentDirs.slice(1), newSiblings)
+          }
+        ];
+      }
+
+      return childrenGenerator(parentDirDirs, result);
+    }, [])[0];
+}
+
+export function generateAsciiTree(rootPath: string, files: string[]) {
+  const jsonTree = generateJsonTree(rootPath, files);
+
+  function childrenTree(
+    children: types.JsonTreeItem[],
+    levels = 0,
+    continuationPipeLevels: number[] = []
+  ): string {
+    if (children.length === 0) { return ''; }
+
+    let separator = '├──';
+    if (children.length === 1) { separator = '└──'; }
+
+    let levelsSpaces = '';
+    if (levels > 0) {
+      for (let i = 0; i < levels * 4; i += 1) { levelsSpaces += ' '; }
+
+      continuationPipeLevels.forEach(level => {
+        const idx = level * 4;
+        levelsSpaces = levelsSpaces.substring(0, idx) + '│' + levelsSpaces.substring(idx + 1);
+      });
+    }
+
+    const name = children[0].name;
+    const childrensChildren = children[0].children || [];
+
+    const childrensChildrenTree = childrenTree(
+      childrensChildren,
+      levels + 1,
+      [
+        ...continuationPipeLevels,
+        ...((children.length > 1 && childrensChildren.length) ? [levels] : [])
+      ]
+    );
+
+    return (
+      `\n${levelsSpaces}${separator} ${name}` +
+      `${childrensChildrenTree}` +
+      `${childrenTree(children.slice(1), levels, continuationPipeLevels)}`
+    );
+  }
+
+  if (!jsonTree || !jsonTree.children) { return null; }
+
+  return `${jsonTree.name}${childrenTree(jsonTree.children)}`;
+}

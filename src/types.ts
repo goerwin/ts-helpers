@@ -18,3 +18,9 @@ export interface File {
   path: string;
   isIgnored: boolean;
 }
+
+export interface JsonTreeItem {
+  name: string;
+  path: string;
+  children?: JsonTreeItem[];
+}

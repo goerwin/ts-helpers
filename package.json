@@ -9,8 +9,8 @@
     "clean": "rm -rf .nyc_output && rm -rf coverage && rm -rf dist",
     "test": "mocha -r source-map-support/register --compilers ts-node/register src/**/_tests/*.ts",
     "test-coverage": "nyc --reporter=html --reporter=text npm run test",
-    "test-coverage-watch": "chokidar src/**/*.ts -c 'npm run test-coverage'",
-    "test-watch": "chokidar src/**/*.ts -c 'npm run test'",
+    "test-coverage-watch": "chokidar 'src/**/*.ts' -c 'npm run test-coverage'",
+    "test-watch": "chokidar 'src/**/*.ts' --initial -c 'npm run test'",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "author": "Erwin Gaitan O <erwingaitano@gmail.com>",

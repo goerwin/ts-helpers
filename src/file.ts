@@ -100,64 +100,57 @@ export function getChildFiles(dirPath: string, options: types.FileDirOptions = {
   return getRecursive();
 }
 
-export function generateJsonTree(
-  rootPath: string,
-  files: types.File[],
-  emptyDirs: types.Directory[] = []
-) {
+export function generateJsonTree(rootPath: string, items: (types.File | types.Directory)[]) {
   const rootPathName = path.basename(rootPath);
 
-  return [...files, ...emptyDirs]
+  function childrenGenerator(
+    item: (types.File | types.Directory),
+    parentDirDirs: string[],
+    parentDirs: string[],
+    siblings: (types.JsonTreeDir | types.JsonTreeFile)[] = []
+  ): (types.JsonTreeDir | types.JsonTreeFile)[] {
+    if (parentDirs.length === 0) {
+      return [
+        ...siblings,
+        types.isFile(item) ?
+          { type: 'file', ...item } : { type: 'directory', children: [], ...item }
+      ];
+    }
+
+    // Get the new Siblings for newItem
+    const newParentPath = parentDirDirs.slice(0, parentDirDirs.length - (parentDirs.length - 1))
+      .join('/');
+    const newItem = siblings.find(el => el.path === newParentPath);
+    const newSiblings = (newItem && newItem.type === 'directory' && newItem.children) || [];
+
+    return [
+      ...siblings.filter(el => el.path !== newParentPath),
+      {
+        type: 'directory',
+        name: parentDirs[0],
+        path: newParentPath,
+        isEmpty: false,
+        isIgnored: false,
+        children: childrenGenerator(item, parentDirDirs, parentDirs.slice(1), newSiblings)
+      }
+    ];
+  }
+
+  return items
     .map(el => el)
-    // .concat(emptyDirs)
-    .sort((file1, file2) => (file1.path < file2.path) ? -1 : 1)
-    .reduce((result, luuuul) => {
-      const relativefilepath = path.relative(rootPath, luuuul.path);
+    .sort((item1, item2) => (item1.path < item2.path) ? -1 : 1)
+    .reduce((result, item) => {
+      const relativefilepath = path.relative(rootPath, item.path);
       const parentDir = path.dirname(relativefilepath);
-      const filename = path.basename(relativefilepath);
+      const itemname = path.basename(relativefilepath);
       const parentDirDirs = [rootPathName, ...(parentDir === '.' ? [] : parentDir.split('/'))];
 
-      function childrenGenerator(
-        parentDirs: string[],
-        siblings: (types.JsonTreeDir | types.JsonTreeFile)[] = []
-      ): (types.JsonTreeDir | types.JsonTreeFile)[] {
-        if (parentDirs.length === 0) {
-          return [
-            ...siblings,
-            types.isFile(luuuul) ?
-              { type: 'file', ...luuuul } : { type: 'directory', children: [], ...luuuul }
-          ];
-        }
-
-        const fpath = parentDirDirs.slice(0, parentDirDirs.length - (parentDirs.length - 1))
-          .join('/');
-
-        const item = siblings.find(el => el.path === fpath);
-        const newSiblings = (item && item.type === 'directory' && item.children) || [];
-
-        return [
-          ...siblings.filter(el => el.path !== fpath),
-          {
-            type: 'directory',
-            name: parentDirs[0],
-            path: fpath,
-            isEmpty: false,
-            isIgnored: false,
-            children: childrenGenerator(parentDirs.slice(1), newSiblings)
-          }
-        ];
-      }
-
-      return childrenGenerator(parentDirDirs, result);
+      return childrenGenerator(item, parentDirDirs, parentDirDirs, result);
     }, [])[0] as types.JsonTreeDir;
 }
 
-export function generateAsciiTree(
-  rootPath: string,
-  files: types.File[],
-  emptyDirs: types.Directory[] = []
-) {
-  const jsonTree = generateJsonTree(rootPath, files, emptyDirs);
+export function generateAsciiTree(rootPath: string, items: (types.File | types.Directory)[]) {
+  const jsonTree = generateJsonTree(rootPath, items);
 
   function childrenTree(
     children: (types.JsonTreeDir | types.JsonTreeFile)[],

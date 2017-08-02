@@ -439,9 +439,7 @@ describe('file helpers', () => {
       const actual = fileHelpers.generateJsonTree(
         'lul',
         [
-          parsePathToFile('./lul/package.json')
-        ],
-        [
+          parsePathToFile('./lul/package.json'),
           parsePathToDirectory('lul/emptydir', { isEmpty: true })
         ]
       );
@@ -571,9 +569,7 @@ describe('file helpers', () => {
       const actual = fileHelpers.generateAsciiTree(
         'lul',
         [
-          parsePathToFile('./lul/anotherthing.js')
-        ],
-        [
+          parsePathToFile('./lul/anotherthing.js'),
           parsePathToDirectory('lul/erwin/gaitan', { isEmpty: true })
         ]
       );
@@ -608,9 +604,7 @@ describe('file helpers', () => {
       const actual = fileHelpers.generateAsciiTree(
         'lul',
         [
-          parsePathToFile('./lul/anotherthing.js')
-        ],
-        [
+          parsePathToFile('./lul/anotherthing.js'),
           parsePathToDirectory('lul/erwin/gaitan', { isIgnored: true })
         ]
       );
@@ -628,9 +622,7 @@ describe('file helpers', () => {
       const actual = fileHelpers.generateAsciiTree(
         'lul',
         [
-          parsePathToFile('./lul/anotherthing.js')
-        ],
-        [
+          parsePathToFile('./lul/anotherthing.js'),
           parsePathToDirectory('lul/erwin/gaitan', { isEmpty: true, isIgnored: true })
         ]
       );

@@ -19,8 +19,20 @@ export interface File {
   isIgnored: boolean;
 }
 
-export interface JsonTreeItem {
-  name: string;
-  path: string;
-  children?: JsonTreeItem[];
+export interface ParsePathToOptions {
+  isIgnored?: boolean;
+  isEmpty?: boolean;
+}
+
+export interface JsonTreeFile extends File {
+  type: 'file';
+}
+
+export interface JsonTreeDir extends Directory {
+  type: 'directory';
+  children: (JsonTreeFile | JsonTreeDir)[];
+}
+
+export function isFile(item: Directory | File): item is File {
+  return (<File> item).base !== undefined;
 }

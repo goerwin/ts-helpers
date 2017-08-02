@@ -1,6 +1,57 @@
 import * as assert from 'assert';
 import * as path from 'path';
 import * as fileHelpers from '../file';
+import * as types from '../types';
+
+function parsePathToFile(
+  filepath: string,
+  options: types.ParsePathToOptions = {}
+): types.File {
+  const { name, base, ext } = path.parse(filepath);
+  return {
+    name,
+    base,
+    ext,
+    path: path.relative('.', filepath),
+    isIgnored: options.isIgnored || false
+  };
+}
+
+function parsePathToJsonTreeFile(
+  filepath: string,
+  options: types.ParsePathToOptions = {}
+): types.JsonTreeFile {
+  return {
+    type: 'file',
+    ...parsePathToFile(filepath, options)
+  };
+}
+
+function parsePathToDirectory(
+  dirpath: string,
+  options: types.ParsePathToOptions = {}
+): types.Directory {
+  const { base } = path.parse(dirpath);
+  return {
+    name: base,
+    path: path.relative('.', dirpath),
+    isIgnored: options.isIgnored || false,
+    isEmpty: options.isEmpty || false
+  };
+}
+
+function parseDirPathToJsonTreeDir(
+  dirpath: string,
+  options: types.ParsePathToOptions = {}
+): types.JsonTreeDir {
+  const { base } = path.parse(dirpath);
+
+  return {
+    type: 'directory',
+    ...parsePathToDirectory(dirpath, options),
+    children: []
+  };
+}
 
 describe('file helpers', () => {
   describe('getChildDirs', () => {
@@ -294,15 +345,17 @@ describe('file helpers', () => {
     it('should generate correct output for 0 level deep', () => {
       const actual = fileHelpers.generateJsonTree(
         'lul',
-        ['./lul/package.json', './lul/anotherthing.js']
+        [
+          parsePathToFile('./lul/package.json'),
+          parsePathToFile('./lul/anotherthing.js')
+        ]
       );
 
       const expected = {
-        name: 'lul',
-        path: 'lul',
+        ...parseDirPathToJsonTreeDir('lul'),
         children: [
-          { name: 'anotherthing.js', path: 'lul/anotherthing.js' },
-          { name: 'package.json', path: 'lul/package.json' }
+          parsePathToJsonTreeFile('./lul/anotherthing.js'),
+          parsePathToJsonTreeFile('./lul/package.json')
         ]
       };
 
@@ -312,22 +365,24 @@ describe('file helpers', () => {
     it('should generate correct output for 1 level deep', () => {
       const actual = fileHelpers.generateJsonTree(
         'lul',
-        ['lul/package.json', 'lul/anotherthing.js', 'lul/omg/index.js']
+        [
+          parsePathToFile('lul/package.json'),
+          parsePathToFile('lul/anotherthing.js'),
+          parsePathToFile('lul/omg/index.js')
+        ]
       );
 
       const expected = {
-        name: 'lul',
-        path: 'lul',
+        ...parseDirPathToJsonTreeDir('lul'),
         children: [
-          { name: 'anotherthing.js', path: 'lul/anotherthing.js' },
+          parsePathToJsonTreeFile('lul/anotherthing.js'),
           {
-            name: 'omg',
-            path: 'lul/omg',
+            ...parseDirPathToJsonTreeDir('lul/omg'),
             children: [
-              { name: 'index.js', path: 'lul/omg/index.js' }
+              parsePathToJsonTreeFile('lul/omg/index.js')
             ]
           },
-          { name: 'package.json', path: 'lul/package.json' }
+          parsePathToJsonTreeFile('lul/package.json')
         ]
       };
 
@@ -338,47 +393,67 @@ describe('file helpers', () => {
       const actual = fileHelpers.generateJsonTree(
         'lul',
         [
-          'lul/package.json',
-          'lul/src/hehe/wut.js',
-          'lul/omg/what/thefuck.jpg',
-          'lul/omg/what/thefuck2.jpg',
-          'lul/omg/index.js'
+          parsePathToFile('lul/package.json'),
+          parsePathToFile('lul/src/hehe/wut.js'),
+          parsePathToFile('lul/omg/what/thefuck.jpg'),
+          parsePathToFile('lul/omg/what/thefuck2.jpg'),
+          parsePathToFile('lul/omg/index.js')
         ]
       );
 
       const expected = {
-        name: 'lul',
-        path: 'lul',
+        ...parseDirPathToJsonTreeDir('lul'),
         children: [
           {
-            name: 'omg',
-            path: 'lul/omg',
+            ...parseDirPathToJsonTreeDir('lul/omg'),
             children: [
-              { name: 'index.js', path: 'lul/omg/index.js' },
+              parsePathToJsonTreeFile('lul/omg/index.js'),
               {
-                name: 'what',
-                path: 'lul/omg/what',
+                ...parseDirPathToJsonTreeDir('lul/omg/what'),
                 children: [
-                  { name: 'thefuck.jpg', path: 'lul/omg/what/thefuck.jpg' },
-                  { name: 'thefuck2.jpg', path: 'lul/omg/what/thefuck2.jpg' }
+                  parsePathToJsonTreeFile('lul/omg/what/thefuck.jpg'),
+                  parsePathToJsonTreeFile('lul/omg/what/thefuck2.jpg')
                 ]
               }
             ]
           },
-          { name: 'package.json', path: 'lul/package.json' },
+          parsePathToJsonTreeFile('lul/package.json'),
           {
-            name: 'src',
-            path: 'lul/src',
+            ...parseDirPathToJsonTreeDir('lul/src'),
             children: [
               {
-                name: 'hehe',
-                path: 'lul/src/hehe',
+                ...parseDirPathToJsonTreeDir('lul/src/hehe'),
                 children: [
-                  { name: 'wut.js', path: 'lul/src/hehe/wut.js' }
+                  parsePathToJsonTreeFile('lul/src/hehe/wut.js')
                 ]
               }
             ]
           }
+        ]
+      };
+
+      assert.deepStrictEqual(actual, expected);
+    });
+
+    it('should generate correct output for empty dirs', () => {
+      const actual = fileHelpers.generateJsonTree(
+        'lul',
+        [
+          parsePathToFile('./lul/package.json')
+        ],
+        [
+          parsePathToDirectory('lul/emptydir', { isEmpty: true })
+        ]
+      );
+
+      const expected = {
+        ...parseDirPathToJsonTreeDir('lul'),
+        children: [
+          {
+            ...parseDirPathToJsonTreeDir('lul/emptydir', { isEmpty: true }),
+            children: []
+          },
+          parsePathToJsonTreeFile('./lul/package.json')
         ]
       };
 
@@ -396,7 +471,10 @@ describe('file helpers', () => {
     it('should generate correct output for 0 levels', () => {
       const actual = fileHelpers.generateAsciiTree(
         'lul',
-        ['./lul/package.json', './lul/anotherthing.js']
+        [
+          parsePathToFile('./lul/package.json'),
+          parsePathToFile('./lul/anotherthing.js')
+        ]
       );
 
       const expected =
@@ -410,7 +488,11 @@ describe('file helpers', () => {
     it('should generate correct output for 1 level deep', () => {
       const actual = fileHelpers.generateAsciiTree(
         'lul',
-        ['lul/package.json', 'lul/anotherthing.js', 'lul/omg/index.js']
+        [
+          parsePathToFile('lul/package.json'),
+          parsePathToFile('lul/anotherthing.js'),
+          parsePathToFile('lul/omg/index.js')
+        ]
       );
 
       const expected =
@@ -427,11 +509,11 @@ describe('file helpers', () => {
       const actual = fileHelpers.generateAsciiTree(
         'lul',
         [
-          'lul/package.json',
-          'lul/src/hehe/wut.js',
-          'lul/omg/what/thefuck.jpg',
-          'lul/omg/what/thefuck2.jpg',
-          'lul/omg/index.js'
+          parsePathToFile('lul/package.json'),
+          parsePathToFile('lul/src/hehe/wut.js'),
+          parsePathToFile('lul/omg/what/thefuck.jpg'),
+          parsePathToFile('lul/omg/what/thefuck2.jpg'),
+          parsePathToFile('lul/omg/index.js')
         ]
       );
 
@@ -454,14 +536,14 @@ describe('file helpers', () => {
       const actual = fileHelpers.generateAsciiTree(
         'lul',
         [
-          'lul/package.json',
-          'lul/src/hehe/wut.js',
-          'lul/win/ammm/cas.jpg',
-          'lul/win/ammm/level3/1.js',
-          'lul/win/ammm/level3/2.js',
-          'lul/win/ammm/thefuck3.js',
-          'lul/win/index.js',
-          'lul/zzz/index.js'
+          parsePathToFile('lul/package.json'),
+          parsePathToFile('lul/src/hehe/wut.js'),
+          parsePathToFile('lul/win/ammm/cas.jpg'),
+          parsePathToFile('lul/win/ammm/level3/1.js'),
+          parsePathToFile('lul/win/ammm/level3/2.js'),
+          parsePathToFile('lul/win/ammm/thefuck3.js'),
+          parsePathToFile('lul/win/index.js'),
+          parsePathToFile('lul/zzz/index.js')
         ]
       );
 
@@ -483,6 +565,83 @@ describe('file helpers', () => {
         '    └── index.js';
 
       assert.deepStrictEqual(actual, expected);
+    });
+
+    it('should print empty dir', () => {
+      const actual = fileHelpers.generateAsciiTree(
+        'lul',
+        [
+          parsePathToFile('./lul/anotherthing.js')
+        ],
+        [
+          parsePathToDirectory('lul/erwin/gaitan', { isEmpty: true })
+        ]
+      );
+
+      const expected =
+        'lul\n' +
+        '├── anotherthing.js\n' +
+        '└── erwin\n' +
+        '    └── gaitan /emptyDirectory';
+
+      assert.equal(actual, expected);
+    });
+
+    it('should print ignored file', () => {
+      const actual = fileHelpers.generateAsciiTree(
+        'lul',
+        [
+          parsePathToFile('./lul/package.json', { isIgnored: true }),
+          parsePathToFile('./lul/anotherthing.js')
+        ]
+      );
+
+      const expected =
+        'lul\n' +
+        '├── anotherthing.js\n' +
+        '└── package.json /fileIgnored';
+
+      assert.equal(actual, expected);
+    });
+
+    it('should print ignored directory', () => {
+      const actual = fileHelpers.generateAsciiTree(
+        'lul',
+        [
+          parsePathToFile('./lul/anotherthing.js')
+        ],
+        [
+          parsePathToDirectory('lul/erwin/gaitan', { isIgnored: true })
+        ]
+      );
+
+      const expected =
+        'lul\n' +
+        '├── anotherthing.js\n' +
+        '└── erwin\n' +
+        '    └── gaitan /directoryIgnored';
+
+      assert.equal(actual, expected);
+    });
+
+    it('should print ignored/empty directory', () => {
+      const actual = fileHelpers.generateAsciiTree(
+        'lul',
+        [
+          parsePathToFile('./lul/anotherthing.js')
+        ],
+        [
+          parsePathToDirectory('lul/erwin/gaitan', { isEmpty: true, isIgnored: true })
+        ]
+      );
+
+      const expected =
+        'lul\n' +
+        '├── anotherthing.js\n' +
+        '└── erwin\n' +
+        '    └── gaitan /emptyDirectory /directoryIgnored';
+
+      assert.equal(actual, expected);
     });
   });
 });

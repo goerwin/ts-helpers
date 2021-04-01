@@ -2,7 +2,7 @@
   "name": "ego-node-helpers",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "version": "0.0.0-development",
+  "version": "1.2.0",
   "description": "",
   "scripts": {
     "build": "npm run clean && tsc",

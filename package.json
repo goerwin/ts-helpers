@@ -7,13 +7,7 @@
   "scripts": {
     "build": "npm run clean && tsc",
     "clean": "rm -rf dist",
-    "test": "jest",
-    "clean2xxxx": "rm -rf .nyc_output && rm -rf coverage && rm -rf dist",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
-    "test2": "mocha -r source-map-support/register --compilers ts-node/register src/**/_tests/**/*.ts",
-    "watch-coverage": "chokidar src --initial -c 'npm run coverage'",
-    "coverage": "nyc --reporter=html --reporter=text npm run test",
-    "watch-test": "chokidar src --initial -c 'npm run test'"
+    "test": "jest"
   },
   "author": "Erwin Gaitan O <erwingaitano@gmail.com>",
   "license": "MIT",

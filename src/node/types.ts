@@ -34,5 +34,5 @@ export interface JsonTreeDir extends Directory {
 }
 
 export function isFile(item: Directory | File): item is File {
-  return (<File> item).base !== undefined;
+  return (<File>item).base !== undefined;
 }

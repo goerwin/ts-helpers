@@ -1,5 +1,3 @@
 import * as file from './file';
 
-export {
-  file
-};
+export { file };

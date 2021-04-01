@@ -6,48 +6,26 @@
   "description": "",
   "scripts": {
     "build": "npm run clean && tsc",
-    "clean": "rm -rf .nyc_output && rm -rf coverage && rm -rf dist",
-    "coverage": "nyc --reporter=html --reporter=text npm run test",
+    "clean": "rm -rf dist",
+    "test": "jest",
+    "clean2xxxx": "rm -rf .nyc_output && rm -rf coverage && rm -rf dist",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post",
-    "test": "mocha -r source-map-support/register --compilers ts-node/register src/**/_tests/**/*.ts",
+    "test2": "mocha -r source-map-support/register --compilers ts-node/register src/**/_tests/**/*.ts",
     "watch-coverage": "chokidar src --initial -c 'npm run coverage'",
+    "coverage": "nyc --reporter=html --reporter=text npm run test",
     "watch-test": "chokidar src --initial -c 'npm run test'"
   },
   "author": "Erwin Gaitan O <erwingaitano@gmail.com>",
   "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {
-    "@types/mocha": "^2.2.41",
-    "@types/node": "^8.0.10",
-    "chokidar-cli": "^1.2.0",
-    "mocha": "^3.4.2",
-    "nyc": "^11.0.3",
-    "semantic-release": "^6.3.6",
-    "ts-node": "^3.2.0",
-    "typescript": "^2.4.1"
+  "dependencies": {
+    "jest": "^26.6.3"
   },
-  "nyc": {
-    "all": true,
-    "check-coverage": true,
-    "per-file": true,
-    "lines": 95,
-    "statements": 95,
-    "functions": 95,
-    "branches": 90,
-    "include": [
-      "src/**/*.ts"
-    ],
-    "exclude": [
-      "**/*.d.ts",
-      "src/index.ts"
-    ],
-    "extension": [
-      ".ts",
-      ".tsx"
-    ],
-    "require": [
-      "ts-node/register"
-    ]
+  "devDependencies": {
+    "@types/jest": "^26.0.22",
+    "@types/node": "^14.14.37",
+    "chokidar-cli": "^2.1.0",
+    "ts-jest": "^26.5.4",
+    "typescript": "^4.2.3"
   },
   "files": [
     "dist",

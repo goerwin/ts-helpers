@@ -1,9 +1,7 @@
 {
-  "name": "ego-node-helpers",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
-  "version": "1.2.0",
-  "description": "",
+  "name": "ts-helpers",
+  "version": "2.0.0",
+  "description": "TypeScript/Javascript Helpers for Node/Client/Both",
   "scripts": {
     "build": "npm run clean && tsc",
     "clean": "rm -rf dist",
@@ -27,6 +25,6 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/erwingo/node-helpers.git"
+    "url": "https://github.com/goerwin/ts-helpers.git"
   }
 }
